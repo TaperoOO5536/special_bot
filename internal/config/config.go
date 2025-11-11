@@ -21,6 +21,10 @@ func GetToken() string {
 	return GetEnvDefault("TOKEN", "")
 }
 
+func GetAdminID() string {
+	return GetEnvDefault("ADMIN_ID", "")
+}
+
 func GetEnvDefault(key, defaultValue string) string {
 	value := os.Getenv(key)
 	if value == "" {

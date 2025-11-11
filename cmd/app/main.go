@@ -26,8 +26,14 @@ func main() {
 
 	updates := bot.GetUpdatesChan(u)
 
-	orderHandler := handler.NewOrderHandler("orders", bot)
-	c, err := kafka.NewConsumer([]string{"localhost:5215"}, []string{orderHandler.Topic, "userevents"}, orderHandler)
+	adminID, err := strconv.Atoi(config.GetAdminID())
+	if err != nil {
+		log.Fatal(err)
+	}
+	handler := handler.NewHandler(bot, int64(adminID))
+	c, err := kafka.NewConsumer([]string{"localhost:38905"},
+															[]string{"orders", "userevents"},
+															handler)
 	if err != nil {
 		log.Fatal(err)
 	}

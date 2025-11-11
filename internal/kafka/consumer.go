@@ -10,11 +10,11 @@ import (
 
 type Consumer struct {
 	consumer *kafka.Consumer
-	orderHandler *handler.OrderHandler
-	stop bool
+	handler  *handler.Handler
+	stop      bool
 }
 
-func NewConsumer(address []string, topics []string, orderHandler handler.OrderHandler) (*Consumer, error) {
+func NewConsumer(address, topics []string, handler handler.Handler) (*Consumer, error) {
 	cfg := &kafka.ConfigMap{
 		"bootstrap.servers": strings.Join(address, ","),
 		"group.id":          "mygroup",
@@ -27,7 +27,7 @@ func NewConsumer(address []string, topics []string, orderHandler handler.OrderHa
 	if err = c.SubscribeTopics(topics, nil); err != nil {
     return nil, err
   }
-	return &Consumer{consumer: c, orderHandler: &orderHandler}, nil
+	return &Consumer{consumer: c, handler: &handler}, nil
 }
 
 func (c *Consumer) Start() {
@@ -55,13 +55,7 @@ func (c *Consumer) Start() {
       continue
     }
 		fmt.Println(eventType)
-		switch eventType {
-		case "order.create":
-			c.orderHandler.CreateOrder(kafkaMsg.Value)
-		default:
-			fmt.Println("unknown topic")
-			continue
-		}
+		c.handler.HandleMessage(eventType, *kafkaMsg.TopicPartition.Topic, kafkaMsg.Value)
 	}
 }
 
